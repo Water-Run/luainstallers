@@ -9,4 +9,4 @@
 
 `luainstallers`是对旧项目[LuaToEXE](https://github.com/Water-Run/luaToEXE)的全面升级: 通过封装预编译的[luastatic](https://github.com/ers35/luastatic/tree/master)代替[srlua](https://github.com/LuaDist/srlua), 使打包后的可执行文件是真正的原生可执行文件, 并支持多平台, 也可执行编译扩展; 并实现了依赖树分析引擎, 具备自动获取依赖依赖, 包括来自`luarocks`安装的库.  
 
-> 项目开源于[GitHub](), 使用[LGPL](./License)协议.  
+> 项目开源于[GitHub](https://github.com/Water-Run/luainstallers/tree/main), 使用[LGPL](./License)协议.  

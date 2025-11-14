@@ -2,7 +2,7 @@
 
 ***[English](./README.md)***  
 
-> `luainstaller`开源于[GitHub](), 遵循`LGPL`协议, 是[luainstallers]()工具集的成员  
+> `luainstaller`开源于[GitHub](https://github.com/Water-Run/luainstallers/tree/main/luainstaller), 遵循`LGPL`协议, 是[luainstallers](https://github.com/Water-Run/luainstallers/tree/main)工具集的成员  
 
 `luainstaller`是一个开源的**Python库**, 封装了预编译的[luastatic](https://github.com/ers35/luastatic/tree/master), 实现了依赖树分析引擎, 提供了**一键式的将`.lua`打包为可执行文件的能力**.  
 
@@ -30,12 +30,40 @@ luainstaller
 
 ```plaintext
 luainstaller by WaterRun. Version 0.5.
-Visit: https://
+Visit: https://github.com/Water-Run/luainstallers/tree/main/luainstaller :)
 ```
 
 即安装成功.  
 
 ## 上手教程  
+
+`luainstaller`的工作流很简洁:  
+
+1. 对入口脚本扫描构建依赖分析(如果自动依赖分析未被禁用)  
+2. 合并手动配置的依赖脚本, 生成依赖清单  
+3. 根据依赖清单调用配置的二进制`luastatic`进行编译  
+
+如:  
+
+```plaintext
+test.lua <入口脚本>
+ | {自动依赖分析}
+ ├──> require("utils/log")
+ │     └── utils/log.lua
+ │           └── require("utils/time")
+ │                 └── utils/time.lua       ==>    <依赖清单>
+ ├──> require("core/init")                       [   
+ │     ├── core/init.lua                         "utils/log.lua",
+ │     ├── core/config.lua                       "utils/time.lua",
+ │     └── core/db.lua                           "core/init.lua",
+ └──(手动配置依赖)                                "core/config.lua",
+       └── extra/plugin.lua                      "core/db.lua", 
+                                                 "extra/plugin.lua"
+                                                 ]                                     
+↓
+{调用对应版本的预编译luastatic编译命令}
+win64_546 test.lua utils/log.lua utils/time.lua core/init.lua core/config.lua core/db.lua extra/plugin.lua -o test.exe
+```
 
 ### 作为图形化工具使用  
 
