@@ -1,6 +1,6 @@
 # `luainstaller`: Python Library for Out-of-the-Box `.lua` Binary Packaging with Dependency Analysis Engine  
 
-***[English](./README.md)***  
+***[中文](./README-zh.md)***  
 
 > `luainstaller` is open-sourced on [GitHub](https://github.com/Water-Run/luainstallers/tree/main/luainstaller) under the `LGPL` license and is a member of the [luainstallers](https://github.com/Water-Run/luainstallers/tree/main) toolkit.  
 

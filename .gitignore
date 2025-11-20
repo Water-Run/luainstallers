@@ -89,3 +89,6 @@ yarn-error.log*
 *.war
 *.nar
 *.ear
+
+# === Precompile ===
+.precompile/
