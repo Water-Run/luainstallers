@@ -1,79 +1,79 @@
-# `luainstaller`: Python Library for Packaging `.lua` into Binaries with Dependency Analysis
+# `luainstaller`: Python库, 将`.lua`打包二进制, 包括依赖分析能力  
 
-***[中文](./README-zh.md)***
+***[English](./README.md)***  
 
-> `luainstaller` is open-sourced on [GitHub](https://github.com/Water-Run/luainstallers/tree/main/luainstaller), follows the `LGPL` license, and is a member of the [luainstallers](https://github.com/Water-Run/luainstallers/tree/main) toolkit
+> `luainstaller`开源于[GitHub](https://github.com/Water-Run/luainstallers/tree/main/luainstaller), 遵循`LGPL`协议, 是[luainstallers](https://github.com/Water-Run/luainstallers/tree/main)工具集的成员  
 
-`luainstaller` is an open-source **Python library** that encapsulates the capability to **package `.lua` files into executables**.
+`luainstaller`是一个开源的**Python库**, 封装了**将`.lua`打包为可执行文件**的能力.  
 
-`luainstaller` can be used:
+`luainstaller`可以:  
 
-- ***As a command-line tool***
-- ***As a graphical tool***
-- ***As a library imported into your projects***
+- ***以命令行工具使用***  
+- ***以图形化工具使用***  
+- ***作为库引入到你的项目中***  
 
-## Installation
+## 安装  
 
-`luainstaller` is published on [PyPI](https://pypi.org/), install it using `pip`:
+`luainstaller`发布在[pypi]()上, 使用`pip`进行安装:  
 
 ```bash
 pip install luainstaller
 ```
 
-After installation, run in the terminal:
+安装完毕后, 在终端中运行:  
 
 ```bash
 luainstaller
 ```
 
-You should get the output:
+获取输出:  
 
 ```plaintext
 luainstaller by WaterRun. Version 1.0.
 Visit: https://github.com/Water-Run/luainstallers/tree/main/luainstaller :-)
 ```
 
-Before using, you also need to configure the `luastatic` environment, including:
+在开始使用前, 还需要配置`luastatic`环境, 包括:  
 
-- lua: [Lua official website](https://www.lua.org/), including the package manager `luarocks`
-- luastatic: `luarocks install luastatic`
-- gcc: usually comes with `linux`, on `windows` refer to: [MinGW](https://github.com/niXman/mingw-builds-binaries)
+- lua: [Lua官网](https://www.lua.org/), 包括包管理器`luarocks`  
+- luastatic: `luarocks install luastatic`  
+- gcc: `linux`上一般自带, `windows`上参考: [MinGW](https://github.com/niXman/mingw-builds-binaries)
 
-And ensure these are configured in your environment variables.
+并确保这些名称配置在环境变量中.  
 
-## Getting Started Tutorial
+## 上手教程  
 
-The workflow of `luainstaller` is concise:
+`luainstaller`的工作流很简洁:  
 
-1. Scan the entry script recursively to build dependency analysis (if automatic dependency analysis is not disabled)
-2. Merge manually configured dependency scripts to generate a dependency list
-3. Call the packaging engine based on the dependency list to compile and output to the specified directory
+1. 对入口脚本扫描, 递归, 构建依赖分析(如果自动依赖分析未被禁用)  
+2. 合并手动配置的依赖脚本, 生成依赖列表  
+3. 根据依赖列表调用`luastatic`进行编译, 输出到指定目录  
 
-As illustrated:
+如图示:  
 
 ```plaintext
-test.lua <entry script>
- | {automatic dependency analysis}
+test.lua <入口脚本>
+ | {自动依赖分析}
  ├──> require("utils/log")
  │     └── utils/log.lua
  │           └── require("utils/time")
- │                 └── utils/time.lua       ==>    <dependency manifest>
+ │                 └── utils/time.lua       ==>    <依赖清单>
  ├──> require("core/init")                       [   
  │     ├── core/init.lua                         "utils/log.lua",
  │     ├── core/config.lua                       "utils/time.lua",
  │     └── core/db.lua                           "core/init.lua",
- └──(manually configured dependencies)            "core/config.lua",
+ └──(手动配置依赖)                                "core/config.lua",
        └── extra/plugin.lua                      "core/db.lua", 
                                                  "extra/plugin.lua"
                                                  ]                                     
                                           ↓
-                       {call precompiled luastatic compilation command for corresponding version}
-win64_546 test.lua utils/log.lua utils/time.lua core/init.lua core/config.lua core/db.lua extra/plugin.lua -o test.exe
+                       {调用luastatic编译命令}
+luastatic test.lua utils/log.lua utils/time.lua core/init.lua core/config.lua core/db.lua extra/plugin.lua -o test.exe
 ```
 
-### About Automatic Dependency Analysis
+### 关于自动依赖分析  
 
-The automatic dependency analysis engine of `luainstaller` will match `require` statements in the following forms:
+`luainstaller`的自动依赖分析引擎会匹配以下形式的`requrie`语句:  
 
 ```lua
 require '{pkg_name}'
@@ -83,222 +83,203 @@ require("pkg_name")
 require([[pkg_name]])
 ```
 
-Other forms will cause errors, including dynamic dependencies.
+此外的形式将导致报错, 包括动态依赖等.  
 
-> In such cases, you should disable automatic dependency analysis and manually add the required dependencies
+> 此时, 应当禁用自动依赖分析, 改用手动添加所需依赖  
 
-### Using as a Graphical Tool
+### 作为图形化工具使用  
 
-The simplest way to use it is through the `GUI`.
-`luainstaller` provides a graphical interface implemented with `Tkinter`. After installation, enter in the terminal:
+最简单的使用方式莫过于`GUI`了.  
+`luainstaller`提供一个由`Tkinter`实现的图形界面. 在完成安装后, 在终端中输入:  
 
 ```bash
 luainstaller-gui
 ```
 
-This will launch it.
+即可启动.  
 
-> The GUI interface only includes basic features
+> GUI界面仅包含基础功能  
 
-### Using as a Command-Line Tool
+### 作为命令行工具使用  
 
-`luainstaller` can also be used directly as a command-line tool. Simply enter in the terminal:
+`luainstaller`也可直接作为命令行工具使用. 直接在终端中输入:  
 
 ```bash
 luainstaller
 ```
 
-> Or `luainstaller-cli`, both are equivalent
+即可.  
 
-#### Command Set
+> 或`luainstaller-cli`, 二者是等效的  
 
-##### Get Help
+#### 指令集  
+
+##### 获取帮助  
 
 ```bash
 luainstaller help
 ```
 
-This will output usage help.
+这将输出使用帮助.
 
-##### Get Logs
-
-```bash
-luainstaller logs [-limit <limit number>] [-asc]
-```
-
-This will output the operation logs stored by luainstaller.
-
-*Parameters:*
-
-- limit: The number of outputs to limit, a positive integer
-- asc: In chronological order (default is reverse order)
-
-> The logging system uses SimpSave
-
-##### Dependency Analysis
+##### 获取日志  
 
 ```bash
-luainstaller analyze <entry script> [-max <max dependencies>] [--detail]
+luainstaller logs [-limit 限制数] [-asc]
 ```
 
-This will perform dependency analysis and output the analysis list.
+这将输出luainstaller存储的操作日志.
 
-*Parameters:*
+*参数:*
 
-- max: Maximum dependency tree limit, a positive integer
-- detail: Detailed runtime output
+- limit: 限制的输出数目, 大于0的整数
+- asc: 按时间顺序(默认倒序)
 
-> By default, analyzes up to 36 dependencies.
+> 日志系统使用SimpSave
 
-##### Execute Compilation
+##### 依赖分析  
 
 ```bash
-luainstaller build <entry script> [-require <dependent .lua scripts>] [-max <max dependencies>] [-output <output binary path>] [--manual] [--detail]
+luainstaller analyze 入口脚本 [-max 最大依赖数] [--detail]
 ```
 
-*Parameters:*
+这将执行依赖分析, 输出分析列表.
 
-- entry script: The corresponding entry script, starting point of dependency analysis
-- require: Dependent scripts, if the corresponding script has been automatically analyzed by the analysis engine, it will be skipped. Multiple scripts separated by commas
-- max: Maximum dependency tree limit, a positive integer. By default, analyzes up to 36
-- output: Specifies the output binary path, defaults to an executable file with the same name as the .lua in the current directory, automatically adding .exe suffix on Windows platform
-- manual: Do not perform dependency analysis, directly compile the entry script unless forcibly specified using -require
-- detail: Detailed runtime output
+*参数:*  
 
-*Examples:*
+- max: 限制的最大依赖树, 大于0的整数
+- detail: 详细的运行输出
+
+> 默认情况下, 分析至多36个依赖.
+
+##### 执行编译  
+
+```bash
+luainstaller build 入口脚本 [-require <依赖的.lua脚本>] [-max 最大依赖数] [-output <输出的二进制路径>] [--manual] [--detail]
+```
+
+*参数:*
+
+- 入口脚本: 对应的入口脚本, 依赖分析的起点
+- require: 依赖的脚本, 如果对应脚本已由分析引擎自动分析到, 将跳过. 多个使用,隔开
+- max: 限制的最大依赖树, 大于0的整数. 默认情况下, 至多分析36个
+- output: 指定输出的二进制路径, 默认为在当前目录下和.lua同名的可执行文件, 在Windows平台上自动添加.exe后缀
+- manual: 不进行依赖分析, 直接编译入口脚本, 除非使用-require强制指定
+- detail: 详细的运行输出
+
+*示例:*
 
 ```bash
 luainstaller hello_world.lua
 ```
 
-Compiles hello_world.lua into an executable hello_world (Linux) or hello_world.exe (Windows) in the same directory.
+将hello_world.lua编译为同目录下的可执行文件hello_world(Linux)或hello_world.exe(Linux).  
 
 ```bash
-luainstaller a.lua -require b.lua,c.lua --manual
+luainstaller a.lua -require b.lua, c.lua --manual
 ```
 
-Packages a.lua together with dependencies b.lua and c.lua into a binary without automatic dependency analysis. The behavior is completely consistent with using luastatic directly.
+将a.lua和依赖b.lua, c.lua一同打包为二进制, 不进行自动依赖分析, 此时行为和直接使用luastatic完全一致.
 
 ```bash
 luainstaller test.lua -max 100 -output ../myProgram --detail
 ```
 
-Analyzes test.lua with up to 100 dependency items, packages it into the myProgram binary in the parent directory, and displays detailed compilation information.
+将test.lua设置至多分析至100个依赖项, 打包至上级目录下的myProgram二进制中, 并显示详尽的编译信息.
 
-## Using as a Library
+## 作为库使用  
 
-`luainstaller` can also be imported as a library into your scripts:
+`luainstaller`也可以作为库导入你的脚本中:  
 
 ```python
 import luainstaller
 ```
 
-And provides a functional API.
+并提供函数式的API.  
 
-## API Reference
+## API参考  
 
 ### `get_logs()`
 
-Get logs
+获取日志  
 
 ```python
 def get_logs(limit: int | None = None,
              _range: range | None = None,
              desc: bool = True) -> list[dict[str, Any]]:
     r"""
-    Returns luainstaller logs.
-    :param limit: Return number limit, None means no limit
-    :param _range: Return range limit, None means no limit
-    :param desc: Whether to return in reverse order
-    :return list[dict[str, Any]]: List of log dictionaries
+    返回luainstaller日志.
+    :param limit: 返回数限制, None表示不限制
+    :param _range: 返回范围限制, None表示不限制
+    :param desc: 是否倒序返回
+    :return list[dict[str, Any]]: 日志字典组成的列表
     """
 ```
 
-Example:
+示例:
 
 ```python
 import luainstaller
 
-log_1: dict = luainstaller.get_logs() # Get all logs in reverse order
-log_2: dict = luainstaller.get_logs(limit=100, _range=range(128, 256), desc=False) # Get up to 100 logs in order, within the range of 128 to 256
+log_1: dict = luainstaller.get_logs() # 以倒序获取全部日志
+log_2: dict = luainstaller.get_logs(limit = 100, _range = range(128, 256), desc=False) # 以顺序获取最多一百条, 范围在128到256之间的日志
 ```
 
 ### `analyze()`
 
-Execute dependency analysis (corresponds to CLI's `luainstaller analyze`)
+执行依赖分析（对应 CLI 的 `luainstaller analyze`）
 
 ```python
 def analyze(entry: str,
             max_deps: int = 36) -> list[str]:
     r"""
-    Execute dependency analysis on the entry script.
+    对入口脚本执行依赖分析.
 
-    :param entry: Entry script path
-    :param max_deps: Maximum recursive dependency count, default 36
-    :return list[str]: List of dependency script paths obtained from analysis
+    :param entry: 入口脚本路径
+    :param max_deps: 最大递归依赖数, 默认36
+    :return list[str]: 分析得到的依赖脚本路径列表
     """
 ```
 
-Example:
+示例:
 
 ```python
 import luainstaller
 
-deps_1: list = luainstaller.analyze("main.lua") # Dependency analysis, analyzes up to 36 dependencies by default
-deps_2: list = luainstaller.analyze("main.lua", max_deps=112) # Execute dependency analysis, modify maximum dependency analysis count to 112
+deps_1: list = luainstaller.analyze("main.lua") # 依赖分析, 默认最多分析36个依赖
+deps_2: list = luainstaller.analyze("main.lua", max_deps=112) # 执行依赖分析, 将最大依赖分析数量修改为112
 ```
 
 ### `build()`
 
-Execute compilation (corresponds to CLI's `luainstaller build`)
+执行编译（对应 CLI 的 `luainstaller build`）
 
 ```python
 def build(entry: str,
           requires: list[str] | None = None,
           max_deps: int = 36,
           output: str | None = None,
-          use_luastatic: bool = False,
-          manual: bool = False,
-          detail: bool = False,
-          binary: str | None = None) -> str:
+          manual: bool = False) -> str:
     r"""
-    Execute script compilation.
+    执行脚本编译.
 
-    :param entry: Entry script
-    :param requires: Manually specify dependency list; if empty, rely only on automatic analysis
-    :param max_deps: Maximum dependency tree analysis count
-    :param output: Output binary path, None uses default rule
-    :param use_luastatic: Whether to use luastatic as packaging engine
-    :param manual: Disable automatic dependency analysis
-    :param detail: Whether to output detailed information
-    :param binary: Specify precompiled luastatic binary (e.g., 'win64_546')
-    :return str: Path of the generated executable file
+    :param entry: 入口脚本
+    :param requires: 手动指定依赖列表; 若为空则仅依赖自动分析
+    :param max_deps: 最大依赖树分析数
+    :param output: 输出二进制路径, None 使用默认规则
+    :param manual: 禁用自动依赖分析
+    :return str: 生成的可执行文件路径
     """
 ```
 
-Example:
+示例:
 
 ```python
 import luainstaller
 
-# Simplest build method, automatically analyzes dependencies and generates an executable with the same name as the script
+# 最简单的构建方式, 自动分析依赖并生成与脚本同名的可执行文件
 luainstaller.build("hello.lua")
 
-# Manual mode: Disable automatic dependency analysis, compile only with scripts specified in requires
+# 手动模式: 禁用自动依赖分析, 仅使用 requires 指定的依赖脚本进行编译
 luainstaller.build("a.lua", requires=["b.lua", "c.lua"], manual=True)
-
-# Advanced build example:
-# - Enable luastatic engine
-# - Specify using precompiled binary lin32_515 (linux 32bit + lua 5.1.5)
-# - Set maximum dependency analysis count to 100
-# - Output binary to "bin/myProgram"
-# - Enable detailed output
-luainstaller.build(
-    "test.lua",
-    max_deps=100,
-    output="bin/myProgram",
-    use_luastatic=True,
-    detail=True,
-    binary="lin32_515"
-)
 ```

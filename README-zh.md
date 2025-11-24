@@ -7,7 +7,7 @@
 - [luainstaller](./luainstaller/README-zh.md): **Python库**. 可作为命令行工具使用(包含由`tkinter`实现的图形界面), 也可作为库导入你的`Python`脚本中  
 - [lua2bin](./lua2bin/README-zh.md): **Lua库**. 采用面向对象的风格.  
 
-使用[luastatic]作为打包引擎, 需要本机具备`lua`, `luastatic`, `gcc`环境:  
+使用[luastatic](https://github.com/ers35/luastatic)作为打包引擎, 需要设备具备`lua`, `luastatic`, `gcc`环境:  
 
 - lua: [Lua官网](https://www.lua.org/), 包括包管理器`luarocks`  
 - luastatic: `luarocks install luastatic`  

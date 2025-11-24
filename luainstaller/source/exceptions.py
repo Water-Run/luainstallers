@@ -1,4 +1,4 @@
-r"""
+"""
 Custom exception classes for luainstaller.
 https://github.com/Water-Run/luainstallers/tree/main/luainstaller
 
@@ -36,32 +36,6 @@ class LuaInstallerException(ABC, Exception):
         return self.message
 
 
-class BinaryNotFoundError(LuaInstallerException):
-    r"""
-    Raised when the specified Lua binary version is not available.
-    
-    This occurs when trying to use a binary that doesn't exist in
-    the binary directory or is not supported.
-    """
-    
-    def __init__(self, binary_name: str, available_binaries: list[str] | None = None) -> None:
-        r"""
-        Initialize the BinaryNotFoundError.
-        
-        :param binary_name: The name of the binary that was not found
-        :param available_binaries: List of available binary names
-        """
-        details = None
-        if available_binaries:
-            details = f"Available binaries: {', '.join(available_binaries)}"
-        super().__init__(
-            f"Binary '{binary_name}' not found",
-            details
-        )
-        self.binary_name = binary_name
-        self.available_binaries = available_binaries
-
-
 class ScriptNotFoundError(LuaInstallerException):
     r"""
     Raised when a Lua script file cannot be found.
@@ -82,7 +56,7 @@ class ScriptNotFoundError(LuaInstallerException):
 
 class DependencyAnalysisError(LuaInstallerException):
     r"""
-    Raised when dependency analysis fails.
+    Base class for dependency analysis related errors.
     
     This can occur due to circular dependencies, malformed require
     statements, or other issues during dependency tree construction.
@@ -125,105 +99,6 @@ class CircularDependencyError(DependencyAnalysisError):
         self.dependency_chain = dependency_chain
 
 
-class CompilationError(LuaInstallerException):
-    r"""
-    Raised when compilation with luastatic fails.
-    
-    This occurs when the underlying luastatic binary returns
-    a non-zero exit code or encounters an error.
-    """
-    
-    def __init__(self, command: str, return_code: int, stderr: str | None = None) -> None:
-        r"""
-        Initialize the CompilationError.
-        
-        :param command: The compilation command that failed
-        :param return_code: The return code from luastatic
-        :param stderr: Standard error output from the compilation process
-        """
-        details = f"Command: {command}\nReturn code: {return_code}"
-        if stderr:
-            details += f"\nStderr: {stderr}"
-        super().__init__(
-            "Compilation failed",
-            details
-        )
-        self.command = command
-        self.return_code = return_code
-        self.stderr = stderr
-
-
-class InvalidConfigurationError(LuaInstallerException):
-    r"""
-    Raised when configuration parameters are invalid.
-    
-    This occurs when user-provided configuration options
-    are malformed or incompatible.
-    """
-    
-    def __init__(self, parameter: str, value: str, reason: str) -> None:
-        r"""
-        Initialize the InvalidConfigurationError.
-        
-        :param parameter: The configuration parameter that is invalid
-        :param value: The invalid value provided
-        :param reason: Explanation of why the value is invalid
-        """
-        super().__init__(
-            f"Invalid configuration for parameter '{parameter}': {value}",
-            reason
-        )
-        self.parameter = parameter
-        self.value = value
-        self.reason = reason
-
-
-class PlatformNotSupportedError(LuaInstallerException):
-    r"""
-    Raised when the current platform is not supported.
-    
-    This occurs when trying to compile on a platform for which
-    no compatible binary is available.
-    """
-    
-    def __init__(self, platform: str, architecture: str) -> None:
-        r"""
-        Initialize the PlatformNotSupportedError.
-        
-        :param platform: The platform name (e.g., 'linux', 'windows')
-        :param architecture: The architecture (e.g., '64', '32')
-        """
-        super().__init__(
-            f"Platform not supported: {platform} {architecture}-bit",
-            "Please compile luastatic manually for your platform or use a supported platform"
-        )
-        self.platform = platform
-        self.architecture = architecture
-
-
-class LuaRocksError(LuaInstallerException):
-    r"""
-    Raised when there are issues with LuaRocks dependencies.
-    
-    This occurs when a required LuaRocks module cannot be found
-    or there are problems resolving LuaRocks packages.
-    """
-    
-    def __init__(self, module_name: str, reason: str) -> None:
-        r"""
-        Initialize the LuaRocksError.
-        
-        :param module_name: The name of the LuaRocks module
-        :param reason: Description of the issue
-        """
-        super().__init__(
-            f"LuaRocks module '{module_name}' error",
-            reason
-        )
-        self.module_name = module_name
-        self.reason = reason
-     
-        
 class DynamicRequireError(DependencyAnalysisError):
     r"""
     Raised when a dynamic require statement is detected.
@@ -255,10 +130,10 @@ class DependencyLimitExceededError(DependencyAnalysisError):
     Raised when the total number of dependencies exceeds the limit.
     
     To prevent infinite loops or excessive compilation times,
-    there is a hard limit of 99 total dependencies.
+    there is a configurable limit on total dependencies.
     """
     
-    def __init__(self, current_count: int, limit: int = 99) -> None:
+    def __init__(self, current_count: int, limit: int) -> None:
         r"""
         Initialize the DependencyLimitExceededError.
         
@@ -323,3 +198,112 @@ class CModuleNotSupportedError(DependencyAnalysisError):
         )
         self.module_name = module_name
         self.module_path = module_path
+
+
+class CompilationError(LuaInstallerException):
+    r"""
+    Base class for compilation related errors.
+    
+    This occurs when the underlying compilation process fails.
+    """
+    pass
+
+
+class LuastaticNotFoundError(CompilationError):
+    r"""
+    Raised when luastatic command is not found in the system.
+    
+    User needs to install luastatic via: luarocks install luastatic
+    """
+    
+    def __init__(self) -> None:
+        super().__init__(
+            "luastatic not found in system",
+            "Please install it via: luarocks install luastatic"
+        )
+
+
+class CompilerNotFoundError(CompilationError):
+    r"""
+    Raised when C compiler (gcc/clang) is not found in the system.
+    
+    User needs to install a C compiler to compile Lua scripts.
+    """
+    
+    def __init__(self, compiler_name: str = "gcc") -> None:
+        r"""
+        Initialize the CompilerNotFoundError.
+        
+        :param compiler_name: Name of the compiler that was not found
+        """
+        super().__init__(
+            f"C compiler '{compiler_name}' not found in system",
+            "Please install a C compiler (gcc/clang/MinGW)"
+        )
+        self.compiler_name = compiler_name
+
+
+class CompilationFailedError(CompilationError):
+    r"""
+    Raised when the compilation process fails.
+    
+    This occurs when luastatic returns a non-zero exit code.
+    """
+    
+    def __init__(self, command: str, return_code: int, stderr: str | None = None) -> None:
+        r"""
+        Initialize the CompilationFailedError.
+        
+        :param command: The compilation command that failed
+        :param return_code: The exit code from luastatic
+        :param stderr: Standard error output from compilation
+        """
+        details = f"Command: {command}\nReturn code: {return_code}"
+        if stderr:
+            details += f"\nStderr: {stderr}"
+        super().__init__("Compilation failed", details)
+        self.command = command
+        self.return_code = return_code
+        self.stderr = stderr
+
+
+class OutputFileNotFoundError(CompilationError):
+    r"""
+    Raised when the expected output file is not found after compilation.
+    
+    This can happen if luastatic succeeds but doesn't generate the
+    expected executable file.
+    """
+    
+    def __init__(self, expected_path: str) -> None:
+        r"""
+        Initialize the OutputFileNotFoundError.
+        
+        :param expected_path: The expected path of the output file
+        """
+        super().__init__(
+            f"Output file not found: {expected_path}",
+            "Compilation appeared to succeed but output file was not generated"
+        )
+        self.expected_path = expected_path
+        
+    r"""
+    Raised when the output path is invalid.
+    
+    This can occur when the output directory doesn't exist or
+    the user lacks write permissions.
+    """
+    
+    def __init__(self, output_path: str, reason: str) -> None:
+        r"""
+        Initialize the InvalidOutputPathError.
+        
+        :param output_path: The invalid output path
+        :param reason: Explanation of why the path is invalid
+        """
+        super().__init__(
+            f"Invalid output path: {output_path}",
+            reason
+        )
+        self.output_path = output_path
+        self.reason = reason
