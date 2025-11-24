@@ -1,12 +1,15 @@
 # `luainstallers`  
 
-***[English](./README.md)***  
+***[中文](./README-zh.md)***  
 
-`luainstallers` is an out-of-the-box toolkit for packaging **`.lua` scripts into standalone, dependency-free native executables**, consisting of:  
+`luainstallers` is a ready-to-use toolkit for packaging **`.lua` scripts into standalone, dependency-free executable binaries**, including:  
 
-- [luainstaller](./luainstaller/README-zh.md): a **Python library** that can be used as a command-line tool (with a `tkinter`-based graphical interface), or imported as a library into your own `Python` scripts  
-- [lua2bin](./lua2bin/README-zh.md): a **Lua library** with an object-oriented style.  
+- [luainstaller](./luainstaller/README.md): **Python library**. Can be used as a command-line tool (with a GUI implemented using `tkinter`), or imported as a library into your `Python` scripts  
+- [lua2bin](./lua2bin/README.md): **Lua library**. Adopts an object-oriented style.  
 
-`luainstallers` is a comprehensive upgrade of the existing legacy project [LuaToEXE](https://github.com/Water-Run/luaToEXE): by wrapping a precompiled [luastatic](https://github.com/ers35/luastatic/tree/master) in place of [srlua](https://github.com/LuaDist/srlua), it turns the packaged executables into true native binaries, supports multiple platforms, and can also compile binary modules. It also implements a dependency analysis engine with automatic dependency discovery (including libraries installed via `luarocks`).  
+`luainstaller` optional engines:  
 
-> The project is open-sourced on [GitHub](https://github.com/Water-Run/luainstallers) under the [LGPL](./License) license.  
+- [srlua](https://github.com/LuaDist/srlua): A classic, simple engine. Provides precompiled binaries for out-of-the-box use  
+- [luastatic](https://github.com/ers35/luastatic): Compiles `.lua` into true native binaries. Requires local `lua`, `luastatic`, and `gcc` environment  
+
+> The project is open-sourced on [GitHub](https://github.com/Water-Run/luainstallers) and is a comprehensive upgrade of the existing legacy project [LuaToEXE](https://github.com/Water-Run/luaToEXE), using the [LGPL](./License) license.

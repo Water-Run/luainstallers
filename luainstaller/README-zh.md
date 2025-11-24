@@ -1,10 +1,13 @@
-# `luainstaller`: Python库, 开箱即用的`.lua`打包二进制, 包括依赖分析引擎  
+# `luainstaller`: Python库, 将`.lua`打包二进制, 包括依赖分析能力  
 
 ***[English](./README.md)***  
 
 > `luainstaller`开源于[GitHub](https://github.com/Water-Run/luainstallers/tree/main/luainstaller), 遵循`LGPL`协议, 是[luainstallers](https://github.com/Water-Run/luainstallers/tree/main)工具集的成员  
 
-`luainstaller`是一个开源的**Python库**, 封装了预编译的[luastatic](https://github.com/ers35/luastatic/tree/master), 实现了依赖分析引擎, 提供了**一键式的将`.lua`打包为可执行文件的能力**.  
+`luainstaller`是一个开源的**Python库**, 封装了**将`.lua`打包为可执行文件**的能力. 包括:  
+
+- 可选打包引擎: 使用`srlua`作为打包引擎时开箱即用  
+- 实现了依赖分析引擎, 可以自动的进行依赖分析, 包括来自`luarocks`中的包  
 
 `luainstaller`可以:  
 
@@ -41,7 +44,7 @@ Visit: https://github.com/Water-Run/luainstallers/tree/main/luainstaller :-)
 
 1. 对入口脚本扫描, 递归, 构建依赖分析(如果自动依赖分析未被禁用)  
 2. 合并手动配置的依赖脚本, 生成依赖列表  
-3. 根据依赖列表调用配置的二进制`luastatic`进行编译  
+3. 根据依赖列表调用打包引擎进行编译, 输出到指定目录  
 
 如图示:  
 
@@ -79,7 +82,20 @@ require([[pkg_name]])
 
 此外的形式将导致报错, 包括动态依赖等.  
 
-> 在这种情况下, 应当禁用自动依赖分析, 改用手动添加所需依赖.  
+> 在这种情况下, 应当禁用自动依赖分析, 改用手动添加所需依赖  
+
+### 关于可选引擎  
+
+`luainstaller`支持可选打包引擎.  
+
+- 默认使用[srlua](https://github.com/LuaDist/srlua), 一个经典, 简单的打包引擎. 封装预编译的版本, 实现开箱即用.  
+
+- 可选[luastatic](https://github.com/ers35/luastatic)引擎, 能够编译为真正的二进制.  
+
+> 使用`luastatic`引擎需要进行环境配置, 确保环境变量中存在:  
+>> lua: [Lua官网](https://www.lua.org/), 包括包管理器`luarocks`  
+>> luastatic: `luarocks install luastatic`  
+>> gcc: `linux`上一般自带, `windows`上参考: [MinGW](https://github.com/niXman/mingw-builds-binaries)
 
 ### 作为图形化工具使用  
 
@@ -114,83 +130,138 @@ luainstaller
 luainstaller help
 ```
 
-这将输出使用帮助.  
-
-##### 获取可用的预编译脚本  
+##### 获取日志  
 
 ```bash
-luainstaller binaries [-match 匹配的名称]
+luainstaller logs [-limit 限制数] [-asc]
 ```
 
-这将输出预编译的, 可用的二进制, 以`平台和位数_lua版本`组成, 以及默认的版本(`5.4.8`).  
-例如, `winarm64_515`代表输出适用于Windows ARM 64位平台, 使用`lua 5.1.5`.  
-默认情况下, 输出和当前平台环境一致的所有可用版本.  
-
-参数说明:  
-
-- `match`: 匹配名称的正则表达式  
-
-#### 获取日志  
-
-```bash
-luainstaller logs [-limit 限制数] [-order {desc | asc}]
-```
-
-这将输出`luainstaller`存储的操作日志, 默认以操作时间倒序, 限制100条.  
-日志系统使用[SimpSave](https://github.com/Water-Run/SimpSave).  
-
-参数说明:  
-
-- `limit`: 限制的输出数目, 大于0的整数  
-- `order`: 按时间顺序(`asc`)/倒序`desc`  
-
-#### 依赖分析  
+##### 依赖分析  
 
 ```bash
 luainstaller analyze 入口脚本 [-max 最大依赖数]
 ```
 
-这将执行依赖分析, 输出分析列表.  
-默认情况下, 分析至多36个依赖.  
-
-参数说明:  
-
-- `max`: 限制的最大依赖树, 大于0的整数  
-
-#### 执行编译  
+##### 执行编译  
 
 ```bash
-luainstaller 入口脚本 [-require <依赖的.lua脚本>] [-max 最大依赖数] [-binary <对应的lua版本>] [-output <输出的二进制路径>] [--manual] [--detail]
+luainstaller build 入口脚本 [-require <依赖的.lua脚本>] [-max 最大依赖数] [-output <输出的二进制路径>] [--luastatic] [--manual] [--detail]
 ```
 
-这将执行编译.  
+## 作为库使用  
 
-参数说明:  
+`luainstaller`也可以作为库导入你的脚本中:  
 
-- `入口脚本`: 对应的入口脚本, 依赖分析的起点  
-- `require`: 依赖的脚本, 如果对应脚本已由分析引擎自动分析到, 将跳过. 多个使用`,`隔开  
-- `max`: 限制的最大依赖树, 大于0的整数. 默认情况下, 至多分析36个  
-- `binary`: 选取指定的二进制版本, 可见于`luainstaller binaries`指令. 默认使用和当前平台一致的`lua 5.4.8`  
-- `output`: 指定输出的二进制路径, 默认为在当前目录下和`.lua`同名的可执行文件, 在`Windows`平台上自动添加`.exe`后缀  
-- `manual`: 不进行依赖分析, 直接编译入口脚本, 除非使用`-require`强制指定  
-- `detail`: 详细的运行输出  
-
-*示例:*  
-
-```bash
-luainstaller hello_world.lua
+```python
+import luainstaller
 ```
 
-将`hello_world.lua`编译为同目录下的可执行文件`hello_world`(Linux)或`hello_world.exe`(Linux), 使用和系统相同位数的`lua 5.4.8`.  
+并提供函数式的API.  
 
-```bash
-luainstaller a.lua -require b.lua, c.lua --manual
+## API参考  
+
+### `get_logs()`
+
+获取日志  
+
+```python
+def get_logs(limit: int | None = None,
+             _range: range | None = None,
+             desc: bool = True) -> list[dict[str, Any]]:
+    r"""
+    返回luainstaller日志.
+    :param limit: 返回数限制, None表示不限制
+    :param _range: 返回范围限制, None表示不限制
+    :param desc: 是否倒序返回
+    :return list[dict[str, Any]]: 日志字典组成的列表
+    """
 ```
 
-将`a.lua`和依赖`b.lua`, `c.lua`一同打包为二进制, 不进行自动依赖分析, 此时行为和直接使用`luastatic`完全一致.  
+示例:
 
-```bash
-luainstaller test.lua -binary lin32_515 -max 100 -output ../myProgram --detail
+```python
+import luainstaller
+
+log_1: dict = luainstaller.get_logs() # 以倒序获取全部日志
+log_2: dict = luainstaller.get_logs(limit = 100, _range = range(128, 256), desc=False) # 以顺序获取最多一百条, 范围在128到256之间的日志
 ```
 
-将`test.lua`使用`linux 32位`, `lua 5.1.5`打包, 设置至多分析至100个依赖项, 至上级目录下的`myProgram`二进制中, 并显示详尽的编译信息.  
+### `analyze()`
+
+执行依赖分析（对应 CLI 的 `luainstaller analyze`）
+
+```python
+def analyze(entry: str,
+            max_deps: int = 36) -> list[str]:
+    r"""
+    对入口脚本执行依赖分析.
+
+    :param entry: 入口脚本路径
+    :param max_deps: 最大递归依赖数, 默认36
+    :return list[str]: 分析得到的依赖脚本路径列表
+    """
+```
+
+示例:
+
+```python
+import luainstaller
+
+deps_1: list = luainstaller.analyze("main.lua") # 依赖分析, 默认最多分析36个依赖
+deps_2: list = luainstaller.analyze("main.lua", max_deps=112) # 执行依赖分析, 将最大依赖分析数量修改为112
+```
+
+### `build()`
+
+执行编译（对应 CLI 的 `luainstaller build`）
+
+```python
+def build(entry: str,
+          requires: list[str] | None = None,
+          max_deps: int = 36,
+          output: str | None = None,
+          use_luastatic: bool = False,
+          manual: bool = False,
+          detail: bool = False,
+          binary: str | None = None) -> str:
+    r"""
+    执行脚本编译.
+
+    :param entry: 入口脚本
+    :param requires: 手动指定依赖列表; 若为空则仅依赖自动分析
+    :param max_deps: 最大依赖树分析数
+    :param output: 输出二进制路径, None 使用默认规则
+    :param use_luastatic: 是否使用luastatic作为打包引擎
+    :param manual: 禁用自动依赖分析
+    :param detail: 是否输出详细信息
+    :param binary: 指定预编译luastatic二进制(如 'win64_546')
+    :return str: 生成的可执行文件路径
+    """
+```
+
+示例:
+
+```python
+import luainstaller
+
+# 最简单的构建方式, 自动分析依赖并生成与脚本同名的可执行文件
+luainstaller.build("hello.lua")
+
+# 手动模式: 禁用自动依赖分析, 仅使用 requires 指定的依赖脚本进行编译
+luainstaller.build("a.lua", requires=["b.lua", "c.lua"], manual=True)
+
+# 高级构建示例:
+# - 启用 luastatic 引擎
+# - 指定使用预编译二进制 lin32_515 (linux 32bit + lua 5.1.5)
+# - 设置最大依赖分析数为100
+# - 输出二进制到 "bin/myProgram"
+# - 启用详细输出
+luainstaller.build(
+    "test.lua",
+    max_deps=100,
+    output="bin/myProgram",
+    use_luastatic=True,
+    detail=True,
+    binary="lin32_515"
+)
+```
